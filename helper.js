@@ -126,6 +126,13 @@ Element.prototype.replaceWith = function(element){
   return element;
 };
 
+Element.prototype.empty = function(){
+  while (this.hasChildNodes()){
+    this.removeChild(this.lastChild);
+  }
+  return this;
+};
+
 NodeList.prototype.forEach = function(callback){
   for (var i in this){
     if (this[i].nodeName){
