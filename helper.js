@@ -1,27 +1,56 @@
 
-
-function get(url,data,callback){
-  if (!callback && typeof data == 'function'){
-    callback = data;
-    data = null;
-  }
+function get(url,data,options){
   var request = new XMLHttpRequest();
-  request.onreadystatechange = callback;
+  var callback;
+  if (typeof data == 'function'){ callback = data; data = null; }
+  if (typeof options == 'function'){ callback = options; options = null; }
+  if (callback){
+    request.onreadystatechange = function(event){
+      var request = event.currentTarget;
+      if (request.status == 200 && request.readyState == 4){
+        callback(request.response);
+      }
+    };
+  }
+  for (var key in options){
+    request[key] = options[key];
+  }
   request.open("GET",url,true);
   request.send(data);
   return request;
 }
 
-function post(url,data,callback){
-  if (!callback && typeof data == 'function'){
-    callback = data;
-    data = null;
-  }
+function post(url,data,options){
   var request = new XMLHttpRequest();
-  request.onreadystatechange = callback;
+  var callback;
+  if (typeof data == 'function'){ callback = data; data = null; }
+  if (typeof options == 'function'){ callback = options; options = null; }
+  if (callback){
+    request.onreadystatechange = function(event){
+      var request = event.currentTarget;
+      if (request.status == 200 && request.readyState == 4){
+        callback(request.response);
+      }
+    };
+  }
+  for (var key in options){
+    request[key] = options[key];
+  }
   request.open("POST",url,true);
   request.send(data);
   return request;
+}
+
+function ws(url,protocol,options){
+  if (!options && protocol.constructor == 'object'){ 
+    options = protocol; 
+    protocol = null; 
+  }
+  var socket = new WebSocket(url, protocol);
+  for (var key in options){
+    socket[key] = options[key];
+  }
+  return socket;
 }
 
 function find(selector){
@@ -41,11 +70,11 @@ function create(type,options){
 }
 
 Element.prototype.find = function(selector){
-  return document.querySelector(selector);
+  return this.querySelector(selector);
 };
 
 Element.prototype.all = function(selector){
-  return document.querySelectorAll(selector);
+  return this.querySelectorAll(selector);
 };
 
 Element.prototype.create = function(type,options){
@@ -62,12 +91,15 @@ Element.prototype.hasClass = function(string){
 };
 
 Element.prototype.addClass = function(string){
-  this.className = this.className.split(' ').push(string).join(' ');
+  if (!this.hasClass(string)){
+    this.className = (this.className + ' ' + string).trim();
+  }
+  return this;
 };
 
 Element.prototype.removeClass = function(string){
-  var classList = this.className.split(' ');
-  this.className = classList.splice(classList.indexOf(string),1).join(' ');  
+  this.className = this.className.replace(string,'').trim();
+  return this;
 };
 
 Element.prototype.toggleClass = function(string){
@@ -76,48 +108,43 @@ Element.prototype.toggleClass = function(string){
   } else {
     this.addClass(string);
   }
+  return this;
 };
 
 Element.prototype.append = function(element){
   this.appendChild(element);
+  return this;
 };
 
 Element.prototype.prepend = function(element){
   this.insertBefore(element,this.firstChild);
+  return this;
 };
 
-
-String.prototype.include = function(string){
-  return this.indexOf(string) > -1;
+Element.prototype.replaceWith = function(element){
+  this.parentNode.replaceChild(element,this);
+  return element;
 };
 
-Array.prototype.include = function(){
-  return this.indexOf(string) > -1;
-};
-
-Array.prototype.first = function(){
-  return this[0];
-};
-
-Array.prototype.last = function(){
-  return this[this.length - 1];
-};
-
-Array.prototype.each = function(callback){
+NodeList.prototype.forEach = function(callback){
   for (var i in this){
-    callback(this[i]);
-  }
-};
-
-Array.prototype.select = function(callback){
-  var array = [];
-  for (var i in this){
-    if (callback(this[i])){
-      array.push(this[i]);
+    if (this[i].nodeName){
+      callback(this[i]);
     }
   }
-  return array;
+  return this;
 };
 
+NodeList.prototype.select = function(callback){
+  var matches = [];
+  for (var i in this){
+    if (this[i].nodeName){
+      if (callback(this[i])){
+        matches.push(this[i]);
+      }
+    }
+  }
+  return matches;
+};
 
 
