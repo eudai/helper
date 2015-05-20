@@ -64,7 +64,11 @@ function all(selector){
 function create(type,options){
   var element = document.createElement(type);
   for (var key in options){
-    element[key] = options[key];
+    if (element[key] !== null){
+      element[key] = options[key];
+    } else {
+      element.setAttribute(key,options[key]);
+    }
   }
   return element;
 }
@@ -80,10 +84,14 @@ Element.prototype.all = function(selector){
 Element.prototype.create = function(type,options){
   var element = document.createElement(type);
   for (var key in options){
-    element[key] = options[key];
+    if (element[key] !== null){
+      element[key] = options[key];  
+    } else {
+      element.setAttribute(key,options[key]);
+    }
   }
   this.appendChild(element);
-  return this;
+  return element;
 };
 
 Element.prototype.hasClass = function(string){
